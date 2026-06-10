@@ -86,26 +86,54 @@ for name in ("checkpoints", "results"):
     os.symlink(f"{DRIVE}/{name}", name)
 print("checkpoints/ и results/ -> Drive")""")
 
-md("""## 7. Обучение всех 5 моделей
-По умолчанию backbone заморожен (учится только голова) — быстро и помещается в
-память; чекпоинт пишется каждую эпоху. Если рантайм умрёт — перезапустите
-ячейки 1-6 и снова эту (веса на Drive целы).
+md("""## 7. ФАЗА 1 — мини-прогон на реальных данных (страховка ~минуты)
+Убеждаемся, что данные распакованы в `<class>/*.avi`, PyAV декодит реальные
+ролики, сплиты сходятся и train-цикл крутится на GPU. **Если выше `--check`
+показал 0 clips у каких-то классов — остановитесь и пришлите вывод (поправим
+фильтр), не запускайте полный прогон.**""")
+code("""!python -m src.train --model tsn --epochs 1 --limit 40 --batch-size 4 --no-freeze
+print("\\nФАЗА 1 ок -> можно запускать полный прогон (ячейка ниже).")""")
 
-**VideoMAE** тяжёлый: при нехватке памяти добавьте `--tiny` или уменьшите batch.
-Для полного дообучения backbone добавьте `--no-freeze`.""")
-code("""EPOCHS = 15
-for m in ["tsn", "tsm", "r2plus1d", "i3d", "videomae"]:
+md("""## 8. ФАЗА 2 — полное обучение 5 моделей
+Порядок **от надёжных к рискованным**: TSN → TSM → R(2+1)D → I3D → VideoMAE.
+К моменту возможного OOM VideoMAE четыре модели уже обучены и сохранены.
+Если VideoMAE падает — автоматически обучается запасная 5-я (**TimeSformer**),
+так что в сравнении всегда ≥5 архитектур.
+
+После каждой модели сразу считаются метрики (`evaluate`) → и чекпоинт, и
+`results/` лежат на Drive. Если рантайм умрёт — перезапустите ячейки 1-6 и
+эту: готовые модели не переобучаются с нуля (чекпоинты на Drive).
+
+По умолчанию backbone заморожен (учится голова) — быстро и экономит память;
+для полного дообучения добавьте `--no-freeze`.""")
+code("""import subprocess, sys
+EPOCHS = 15
+ORDER = ["tsn", "tsm", "r2plus1d", "i3d", "videomae"]
+
+def train_then_eval(model, train_extra=None):
+    r = subprocess.run([sys.executable, "-m", "src.train", "--model", model,
+                        "--epochs", str(EPOCHS)] + (train_extra or []))
+    if r.returncode != 0:
+        return False
+    subprocess.run([sys.executable, "-m", "src.evaluate", "--model", model])
+    return True
+
+for m in ORDER:
     print("=" * 70, m)
-    !python -m src.train --model {m} --epochs {EPOCHS}""")
+    ok = train_then_eval(m)
+    if not ok and m == "videomae":
+        print("VideoMAE упал (вероятно OOM) -> запасная 5-я: TimeSformer")
+        if not train_then_eval("timesformer"):
+            print("TimeSformer тоже упал -> пробуем VideoMAE в tiny-режиме")
+            train_then_eval("videomae", ["--tiny"])
+print("\\nФАЗА 2 завершена.")""")
 
-md("## 8. Оценка, сравнение, отчёт")
-code("""for m in ["tsn", "tsm", "r2plus1d", "i3d", "videomae"]:
-    !python -m src.evaluate --model {m}
-!python -m src.compare
+md("## 9. Сравнение и отчёт")
+code("""!python -m src.compare
 !python -m reports.generate_report
-print("comparison + report готовы")""")
+print("comparison + report готовы (results/, reports/out/ на Drive)")""")
 
-md("""## 9. Скачать отчёт
+md("""## 10. Скачать отчёт
 ```python
 from google.colab import files
 files.download("reports/out/report.pdf")

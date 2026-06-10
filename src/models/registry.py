@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import torch.nn as nn
 
+from src.config import MODEL_NAMES
 from src.models.i3d import I3D
 from src.models.r2plus1d import R2Plus1D
 from src.models.tsm import TSM
@@ -29,5 +30,8 @@ def build_model(name: str, num_classes: int, num_frames: int = 16,
         return R2Plus1D(num_classes, pretrained=pretrained)
     if name == "videomae":
         return VideoMAE(num_classes, num_frames=num_frames, img_size=img_size,
-                        pretrained=pretrained, tiny=tiny)
-    raise ValueError(f"Unknown model '{name}'. Choices: tsn, tsm, i3d, r2plus1d, videomae")
+                        pretrained=pretrained, tiny=tiny, backend="videomae")
+    if name == "timesformer":
+        return VideoMAE(num_classes, num_frames=num_frames, img_size=img_size,
+                        pretrained=pretrained, tiny=tiny, backend="timesformer")
+    raise ValueError(f"Unknown model '{name}'. Choices: {', '.join(MODEL_NAMES)}")

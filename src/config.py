@@ -74,13 +74,16 @@ DEFAULTS = dict(
     num_workers=2,
 )
 
-# Registered model keys (the 5 families). Each entry can override DEFAULTS.
+# Registered model keys. Five DIFFERENT families are required; `timesformer` is a
+# transformer fallback for `videomae` (e.g. if VideoMAE OOMs on free Colab) so the
+# comparison never drops below five architectures.
 MODEL_CONFIGS = {
-    "tsn":      dict(img_size=112, num_frames=8),
-    "tsm":      dict(img_size=112, num_frames=8),
-    "i3d":      dict(img_size=112, num_frames=16),
-    "r2plus1d": dict(img_size=112, num_frames=16),
-    "videomae": dict(img_size=224, num_frames=16, batch_size=4, lr=5e-5),
+    "tsn":         dict(img_size=112, num_frames=8),
+    "tsm":         dict(img_size=112, num_frames=8),
+    "i3d":         dict(img_size=112, num_frames=16),
+    "r2plus1d":    dict(img_size=112, num_frames=16),
+    "videomae":    dict(img_size=224, num_frames=16, batch_size=4, lr=5e-5),
+    "timesformer": dict(img_size=224, num_frames=8, batch_size=4, lr=5e-5),
 }
 MODEL_NAMES = list(MODEL_CONFIGS.keys())
 
