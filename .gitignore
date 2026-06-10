@@ -7,17 +7,18 @@ __pycache__/
 venv/
 .env
 
-# Data & weights (heavy / not for VCS)
-data/
-checkpoints/
+# Data & weights (heavy / not for VCS) — root-anchored so they do NOT match
+# the source package src/data/
+/data/
+/checkpoints/
 *.pt
 *.pth
 *.ckpt
 
 # Runtime artifacts
 demo/history.db
-results/
-reports/out/
+/results/
+/reports/out/
 *.log
 /tmp/
 
