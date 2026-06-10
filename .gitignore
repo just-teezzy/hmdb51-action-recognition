@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+.venv/
+venv/
+.env
+
+# Data & weights (heavy / not for VCS)
+data/
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+
+# Runtime artifacts
+demo/history.db
+results/
+reports/out/
+*.log
+/tmp/
+
+# OS / IDE / agent
+.DS_Store
+.idea/
+.vscode/
+.claude/

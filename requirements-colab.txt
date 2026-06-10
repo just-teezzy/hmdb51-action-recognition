@@ -1,0 +1,11 @@
+# Google Colab (GPU) stack. Colab already ships a CUDA torch/torchvision;
+# only add what is missing. Run inside the first notebook cell:
+#   pip install -r requirements-colab.txt
+pytorchvideo==0.1.5
+transformers==4.44.2
+timm==1.0.9
+av==12.3.0
+scikit-learn==1.5.1
+seaborn==0.13.2
+patool==2.4.0
+rarfile==4.2
