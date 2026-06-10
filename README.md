@@ -8,15 +8,22 @@
 > инференс, демо и весь сервисный пайплайн. Код един для обоих режимов.
 
 ## Датасет
-- **HMDB51**, подмножество из **10 классов**: `climb, fencing, golf, kick_ball, pour,
-  pullup, push, ride_bike, shoot_bow, wave` (~150 роликов на класс, ~1500 всего).
+- **HMDB51**, подмножество из **10 классов**: `climb, draw_sword, fencing, golf,
+  pullup, ride_bike, run, shoot_bow, walk, wave` (~150 роликов на класс, ~1500 всего).
+  В набор намеренно включены **похожие пары** (`run`/`walk`, `fencing`/`draw_sword`),
+  чтобы анализ ошибок и confusion matrix были содержательными.
 - **Разметка:** один ярлык-действие на ролик (video-level classification).
-- **Сплиты:** официальные `testTrainMulti_7030_splits` (split 1); валидация выделяется
-  из train (15%, стратифицированно).
-- **Лицензия/ограничения:** HMDB51 распространяется Brown University (serre-lab) и
-  предназначен **только для исследовательских/учебных целей**; ролики взяты из
-  публичных источников и фильмов. Сам датасет в репозиторий **не** коммитится
-  (см. `.gitignore`). Код проекта — под лицензией MIT ([LICENSE](LICENSE)).
+- **Источник данных:** HuggingFace-зеркало
+  [`jili5044/hmdb51`](https://huggingface.co/datasets/jili5044/hmdb51) — клипы уже
+  распакованы в `.avi` по папкам-классам (RAR/unrar не нужны). Исходный serre-lab
+  (RAR-архивы) оставлен как fallback (`--source serre-lab`).
+- **Сплиты:** если присутствуют официальные `testTrainMulti_7030_splits` — берём их;
+  иначе строим **свой стратифицированный split с фиксированным seed** (70/30,
+  детерминированно). Валидация в обоих случаях выделяется из train (15%,
+  стратифицированно), т.к. официального val у HMDB51 нет.
+- **Лицензия/ограничения:** HMDB51 предназначен **только для исследовательских/учебных
+  целей**; ролики взяты из публичных источников и фильмов. Датасет в репозиторий **не**
+  коммитится (см. `.gitignore`). Код проекта — под лицензией MIT ([LICENSE](LICENSE)).
 
 ## 5 архитектур (разные семейства)
 | # | Модель | Семейство | Источник весов | Реализация |
@@ -64,12 +71,15 @@ pip install -r requirements.txt
 ```bash
 python scripts/smoke_test.py
 ```
-**Данные** (HMDB51 subset; нужен `unrar`: `sudo apt-get install -y unrar`):
+**Данные** (HMDB51 subset, HuggingFace-зеркало — без RAR/unrar):
 ```bash
-python -m src.data.download_hmdb        # скачать + распаковать выбранные классы
+python -m src.data.download_hmdb              # источник HF (по умолчанию)
 python -m src.data.download_hmdb --check
+# fallback на оригинал (нужен unrar):
+#   python -m src.data.download_hmdb --source serre-lab
 ```
-**Обучение** (локально — только малые прогоны; полноценно — в Colab):
+**Обучение** (полноценно — в Colab на GPU, см. [notebooks/train.ipynb](notebooks/train.ipynb);
+локально — только малые прогоны):
 ```bash
 python -m src.train --model r2plus1d --epochs 15
 ```

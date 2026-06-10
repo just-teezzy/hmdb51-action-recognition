@@ -29,18 +29,22 @@ for _d in (DATA_DIR, RAW_DIR, SPLIT_DIR, CHECKPOINT_DIR, RESULTS_DIR, REPORT_DIR
     _d.mkdir(parents=True, exist_ok=True)
 
 # ---------------------------------------------------------------------------
-# Dataset: 10-class subset of HMDB51 (visually distinct actions)
+# Dataset: 10-class subset of HMDB51.
+# Mostly distinct actions, but two deliberately CONFUSABLE pairs are included so
+# the error analysis / confusion matrix is meaningful (course requirement):
+#   * run  <-> walk            (both locomotion, differ mainly in speed)
+#   * fencing <-> draw_sword   (both sword-in-hand arm motions)
 # ---------------------------------------------------------------------------
 CLASSES = [
     "climb",
+    "draw_sword",
     "fencing",
     "golf",
-    "kick_ball",
-    "pour",
     "pullup",
-    "push",
     "ride_bike",
+    "run",
     "shoot_bow",
+    "walk",
     "wave",
 ]
 NUM_CLASSES = len(CLASSES)
