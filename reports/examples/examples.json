@@ -1,0 +1,141 @@
+{
+  "model": "videomae",
+  "test_accuracy": 0.8757225433526011,
+  "n_correct": 303,
+  "n_wrong": 43,
+  "n_test": 346,
+  "examples": [
+    {
+      "category": "good",
+      "true": "golf",
+      "pred": "golf",
+      "confidence": 0.9703,
+      "top3": [
+        [
+          "golf",
+          0.9703
+        ],
+        [
+          "climb",
+          0.0065
+        ],
+        [
+          "wave",
+          0.0041
+        ]
+      ],
+      "video": "Eric_Axley_golf_f_cm_np1_le_goo_0.avi",
+      "image": "reports/examples/good_1_golf_as_golf.png"
+    },
+    {
+      "category": "good",
+      "true": "pullup",
+      "pred": "pullup",
+      "confidence": 0.9685,
+      "top3": [
+        [
+          "pullup",
+          0.9685
+        ],
+        [
+          "wave",
+          0.0057
+        ],
+        [
+          "climb",
+          0.0052
+        ]
+      ],
+      "video": "A_HOT_Marine_Doing_Chinups_pullup_u_cm_np1_le_med_1.avi",
+      "image": "reports/examples/good_2_pullup_as_pullup.png"
+    },
+    {
+      "category": "good",
+      "true": "golf",
+      "pred": "golf",
+      "confidence": 0.9671,
+      "top3": [
+        [
+          "golf",
+          0.9671
+        ],
+        [
+          "climb",
+          0.0056
+        ],
+        [
+          "wave",
+          0.0052
+        ]
+      ],
+      "video": "Angel_Cabrera_s_Golf_Swing_golf_f_cm_np1_ri_med_0.avi",
+      "image": "reports/examples/good_3_golf_as_golf.png"
+    },
+    {
+      "category": "bad",
+      "true": "walk",
+      "pred": "run",
+      "confidence": 0.6847,
+      "top3": [
+        [
+          "run",
+          0.6847
+        ],
+        [
+          "walk",
+          0.2213
+        ],
+        [
+          "wave",
+          0.0254
+        ]
+      ],
+      "video": "Narcotic19672256kb_walk_f_cm_np1_ba_med_3.avi",
+      "image": "reports/examples/bad_1_walk_as_run.png"
+    },
+    {
+      "category": "bad",
+      "true": "walk",
+      "pred": "run",
+      "confidence": 0.5365,
+      "top3": [
+        [
+          "run",
+          0.5365
+        ],
+        [
+          "walk",
+          0.3191
+        ],
+        [
+          "wave",
+          0.0894
+        ]
+      ],
+      "video": "AmericanGangster_walk_f_cm_np1_fr_med_58.avi",
+      "image": "reports/examples/bad_2_walk_as_run.png"
+    },
+    {
+      "category": "bad",
+      "true": "walk",
+      "pred": "run",
+      "confidence": 0.5283,
+      "top3": [
+        [
+          "run",
+          0.5283
+        ],
+        [
+          "walk",
+          0.2302
+        ],
+        [
+          "wave",
+          0.0771
+        ]
+      ],
+      "video": "EVOLUTION_walk_f_cm_np1_fr_med_23.avi",
+      "image": "reports/examples/bad_3_walk_as_run.png"
+    }
+  ]
+}

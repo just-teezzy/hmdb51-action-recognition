@@ -17,10 +17,13 @@ venv/
 
 # Runtime artifacts
 demo/history.db
-/results/
-/reports/out/
 *.log
 /tmp/
+/_unzip/
+venya_results.zip
+# NOTE: results/ and reports/out/ ARE committed — they are the deliverable
+# (metrics, confusion matrices, comparison, report). Only heavy weights (*.pt,
+# /checkpoints/) and the dataset (/data/) stay out of VCS.
 
 # OS / IDE / agent
 .DS_Store
