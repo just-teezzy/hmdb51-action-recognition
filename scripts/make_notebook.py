@@ -159,12 +159,26 @@ code("""!python -m src.compare
 !python -m reports.generate_report
 print("comparison + report готовы (results/, reports/out/ на Drive)")""")
 
-md("""## 10. Скачать отчёт
-```python
+md("""## 10. ФАЗА 3 — анализ (длина клипа + примеры ошибок)
+Влияние числа кадров на качество (по моделям с переменным входом) и сбор
+3 удачных + 3 ошибочных примеров лучшей модели (с приоритетом спорных пар).""")
+code("""!cd /content/venya && python -m src.frame_sweep
+!cd /content/venya && python -m src.find_examples --model videomae""")
+
+md("""## 11. Выгрузить результаты
+Собирает results/ (метрики, confusion, графики, frame_sweep), отчёт и примеры
+в один архив и скачивает — пришлите его, чтобы заполнить README/анализ.""")
+code("""import os
+os.makedirs("/content/bundle", exist_ok=True)
+# cp -L разыменовывает симлинки results/ -> Drive
+!cp -rL /content/venya/results /content/bundle/results
+!cp -rL /content/venya/reports/out /content/bundle/report_out
+!cp -rL /content/venya/reports/examples /content/bundle/examples 2>/dev/null || true
+!cd /content/bundle && zip -qr /content/venya_results.zip .
 from google.colab import files
-files.download("reports/out/report.pdf")
-```
-Чекпоинты и метрики уже на Drive (MyDrive/venya/).""")
+files.download("/content/venya_results.zip")""")
+
+md("""Чекпоинты (.pt) и метрики также лежат на Drive в `MyDrive/venya/`.""")
 
 nb = {
     "cells": cells,
