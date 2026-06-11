@@ -16,7 +16,6 @@ Usage
 from __future__ import annotations
 
 import argparse
-import os
 import shutil
 import subprocess
 import sys
@@ -36,41 +35,55 @@ MIN_SIZE = {"hmdb51_org.rar": 1_900_000_000, "test_train_splits.rar": 100_000}
 # ===========================================================================
 # Primary: HuggingFace mirror
 # ===========================================================================
-def download_hf() -> None:
-    """Download only our classes from the HF mirror and lay them out as
-    ``data/raw/<class>/*.avi``."""
-    from huggingface_hub import snapshot_download
+def _class_of(member: str):
+    """Return the class whose folder contains this archive member, or None.
+    Robust to any nesting: matches a path component exactly equal to a class
+    (so 'climb' never matches 'climb_stairs')."""
+    parts = member.replace("\\", "/").split("/")
+    for c in CLASSES:
+        if c in parts:
+            return c
+    return None
 
-    print(f"[hf] snapshot_download({HF_REPO}) for {len(CLASSES)} classes")
-    # Limit the download to paths mentioning our class names (fnmatch over the
-    # full relative path — the class folder name is part of it).
-    patterns = [f"*{c}*" for c in CLASSES]
-    local = snapshot_download(repo_id=HF_REPO, repo_type="dataset",
-                              allow_patterns=patterns)
-    local = Path(local)
+
+def download_hf() -> None:
+    """Download the single ``hmdb51.zip`` from the HF mirror and extract only our
+    10 classes into ``data/raw/<class>/*.avi`` (zip — no unrar needed)."""
+    import zipfile
+
+    from huggingface_hub import hf_hub_download
+
+    print(f"[hf] hf_hub_download({HF_REPO}: hmdb51.zip)")
+    zip_path = Path(hf_hub_download(repo_id=HF_REPO, repo_type="dataset",
+                                    filename="hmdb51.zip"))
+    print(f"  archive: {zip_path} ({zip_path.stat().st_size/1e6:.0f} MB)")
 
     RAW_DIR.mkdir(parents=True, exist_ok=True)
     copied = {c: 0 for c in CLASSES}
-    for avi in local.rglob("*.avi"):
-        cls = avi.parent.name              # layout: .../<class>/<video>.avi
-        if cls not in CLASSES:
-            continue
-        dst_dir = RAW_DIR / cls
-        dst_dir.mkdir(parents=True, exist_ok=True)
-        dst = dst_dir / avi.name
-        if not dst.exists():
-            try:
-                os.link(avi, dst)          # hard-link to avoid duplicating GBs
-            except OSError:
-                shutil.copy2(avi, dst)
-        copied[cls] += 1
+    with zipfile.ZipFile(zip_path) as zf:
+        members = [n for n in zf.namelist()
+                   if n.lower().endswith(".avi") and _class_of(n) in CLASSES]
+        if not members:
+            raise RuntimeError(
+                "No .avi members matched our classes inside hmdb51.zip. "
+                f"Sample entries: {zf.namelist()[:5]}")
+        print(f"  extracting {len(members)} clips for {len(CLASSES)} classes…")
+        for n in members:
+            cls = _class_of(n)
+            dst_dir = RAW_DIR / cls
+            dst_dir.mkdir(parents=True, exist_ok=True)
+            dst = dst_dir / Path(n).name
+            if not dst.exists():
+                with zf.open(n) as src, open(dst, "wb") as out:
+                    shutil.copyfileobj(src, out)
+            copied[cls] += 1
 
-    missing = [c for c, n in copied.items() if n == 0]
     for c in CLASSES:
         print(f"  {c:12s} {copied[c]:4d} clips")
+    missing = [c for c, n in copied.items() if n == 0]
     if missing:
         print(f"  WARNING no clips found for: {missing} "
-              f"(inspect the mirror layout under {local})")
+              f"(inspect archive layout: zipfile.ZipFile({zip_path}).namelist())")
 
 
 # ===========================================================================
