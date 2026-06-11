@@ -56,6 +56,11 @@ IDX_TO_CLASS = {i: c for i, c in enumerate(CLASSES)}
 # ---------------------------------------------------------------------------
 NUM_FRAMES = 16          # frames sampled per clip (training default)
 IMG_SIZE = 112           # spatial resolution after crop
+
+# HMDB51 is imbalanced (e.g. walk=548, run=232, most classes ~100-116). Cap the
+# number of clips per class (deterministically, seeded) so the comparison and the
+# confusion-matrix / error analysis are not dominated by the majority classes.
+MAX_PER_CLASS = 150
 # ImageNet / Kinetics normalisation (shared by all backbones)
 MEAN = (0.45, 0.45, 0.45)
 STD = (0.225, 0.225, 0.225)

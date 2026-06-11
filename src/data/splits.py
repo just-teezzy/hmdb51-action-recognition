@@ -18,7 +18,7 @@ import random
 from pathlib import Path
 from typing import Dict, List, Tuple
 
-from src.config import CLASS_TO_IDX, CLASSES, RAW_DIR, SPLIT_DIR
+from src.config import CLASS_TO_IDX, CLASSES, MAX_PER_CLASS, RAW_DIR, SPLIT_DIR
 
 Sample = Tuple[str, int]
 
@@ -54,14 +54,16 @@ def _from_official(split_idx: int, raw_dir: Path, split_dir: Path
     return train, test
 
 
-def _stratified(raw_dir: Path, test_ratio: float, seed: int
-                ) -> Tuple[List[Sample], List[Sample]]:
+def _stratified(raw_dir: Path, test_ratio: float, seed: int,
+                max_per_class: int) -> Tuple[List[Sample], List[Sample]]:
     rng = random.Random(seed)
     train, test = [], []
     for cls in CLASSES:
         label = CLASS_TO_IDX[cls]
         clips = sorted(str(p) for p in (raw_dir / cls).glob("*.avi"))
         rng.shuffle(clips)
+        if max_per_class:
+            clips = clips[:max_per_class]      # tame class imbalance (seeded)
         n_test = max(1, int(round(len(clips) * test_ratio))) if clips else 0
         test += [(p, label) for p in clips[:n_test]]
         train += [(p, label) for p in clips[n_test:]]
@@ -70,14 +72,15 @@ def _stratified(raw_dir: Path, test_ratio: float, seed: int
 
 def build_splits(split_idx: int = 1, val_ratio: float = 0.15, test_ratio: float = 0.3,
                  seed: int = 42, raw_dir: Path = RAW_DIR, split_dir: Path = SPLIT_DIR,
-                 prefer_official: bool = True) -> Dict[str, List[Sample]]:
+                 prefer_official: bool = True, max_per_class: int = MAX_PER_CLASS
+                 ) -> Dict[str, List[Sample]]:
     """Return {"train": [...], "val": [...], "test": [...]} of (abs_path, label)."""
     if prefer_official and _have_official(split_idx, split_dir):
         train, test = _from_official(split_idx, raw_dir, split_dir)
         source = "official"
     else:
-        train, test = _stratified(raw_dir, test_ratio, seed)
-        source = "stratified(seeded)"
+        train, test = _stratified(raw_dir, test_ratio, seed, max_per_class)
+        source = f"stratified(seeded, max_per_class={max_per_class})"
 
     # carve a stratified validation set out of train (fixed seed)
     rng = random.Random(seed)
