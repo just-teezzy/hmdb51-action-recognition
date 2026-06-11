@@ -28,29 +28,42 @@ class VideoMAE(nn.Module):
 
     @staticmethod
     def _build_videomae(num_classes, num_frames, img_size, pretrained, tiny):
+        # NOTE: architecture size (`tiny`) is independent of whether we load
+        # pretrained weights. At eval we pass pretrained=False (we load our own
+        # fine-tuned checkpoint) but still need the BASE architecture, otherwise
+        # the state_dict will not match.
         from transformers import (VideoMAEConfig, VideoMAEForVideoClassification)
-        if tiny or not pretrained:
+        if tiny:
             cfg = VideoMAEConfig(
                 image_size=img_size, num_frames=num_frames, num_labels=num_classes,
                 hidden_size=192, num_hidden_layers=4, num_attention_heads=3,
                 intermediate_size=768, tubelet_size=2)
             return VideoMAEForVideoClassification(cfg)
-        return VideoMAEForVideoClassification.from_pretrained(
-            "MCG-NJU/videomae-base-finetuned-kinetics",
-            num_labels=num_classes, ignore_mismatched_sizes=True)
+        if pretrained:
+            return VideoMAEForVideoClassification.from_pretrained(
+                "MCG-NJU/videomae-base-finetuned-kinetics",
+                num_labels=num_classes, ignore_mismatched_sizes=True)
+        # base architecture, random init (defaults match the kinetics base model)
+        cfg = VideoMAEConfig(image_size=img_size, num_frames=num_frames,
+                             num_labels=num_classes)
+        return VideoMAEForVideoClassification(cfg)
 
     @staticmethod
     def _build_timesformer(num_classes, num_frames, img_size, pretrained, tiny):
         from transformers import (TimesformerConfig, TimesformerForVideoClassification)
-        if tiny or not pretrained:
+        if tiny:
             cfg = TimesformerConfig(
                 image_size=img_size, num_frames=num_frames, num_labels=num_classes,
                 hidden_size=192, num_hidden_layers=4, num_attention_heads=3,
                 intermediate_size=768)
             return TimesformerForVideoClassification(cfg)
-        return TimesformerForVideoClassification.from_pretrained(
-            "facebook/timesformer-base-finetuned-k400",
-            num_labels=num_classes, ignore_mismatched_sizes=True)
+        if pretrained:
+            return TimesformerForVideoClassification.from_pretrained(
+                "facebook/timesformer-base-finetuned-k400",
+                num_labels=num_classes, ignore_mismatched_sizes=True)
+        cfg = TimesformerConfig(image_size=img_size, num_frames=num_frames,
+                                num_labels=num_classes)
+        return TimesformerForVideoClassification(cfg)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:  # [B,T,C,H,W]
         # HuggingFace video models expect pixel_values [B, T, C, H, W].

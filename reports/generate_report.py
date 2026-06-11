@@ -107,7 +107,10 @@ def main() -> None:
     if df.empty:
         raise SystemExit("No results to report. Run evaluate + compare first.")
     generate_excel(df, config.REPORT_DIR / "report.xlsx")
-    generate_pdf(df, config.REPORT_DIR / "report.pdf")
+    try:
+        generate_pdf(df, config.REPORT_DIR / "report.pdf")
+    except ImportError as e:
+        log.info(f"skip PDF (missing dependency: {e}); Excel report still written")
 
 
 if __name__ == "__main__":
