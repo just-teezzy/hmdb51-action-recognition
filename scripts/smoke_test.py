@@ -49,7 +49,7 @@ def stage_models() -> None:
         "tsn": (1, 8, 3, 64, 64),
         "tsm": (1, 8, 3, 64, 64),
         "r2plus1d": (1, 8, 3, 112, 112),
-        "i3d": (1, 8, 3, 224, 224),       # slow_r50 head needs 224 spatial / 8 frames
+        "i3d": (1, 16, 3, 112, 112),      # adaptive head pool -> works at 112 too
         "videomae": (1, 16, 3, 112, 112),
     }
     crit = torch.nn.CrossEntropyLoss()

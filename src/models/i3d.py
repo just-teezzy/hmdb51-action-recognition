@@ -21,6 +21,11 @@ class I3D(nn.Module):
             head.proj = nn.Linear(head.proj.in_features, num_classes)
         else:  # safety net for head layout changes
             raise RuntimeError(f"Unexpected head layout for {kind}: {type(head)}")
+        # The pretrained head uses a FIXED AvgPool3d (kernel ~4x7x7) that assumes
+        # 224px / 8-frame inputs; at 112px the feature map is 4x4 < 7 and pooling
+        # crashes. Swap to adaptive pooling so any input size works.
+        if getattr(head, "pool", None) is not None:
+            head.pool = nn.AdaptiveAvgPool3d(1)
         self.net = net
 
     @staticmethod
