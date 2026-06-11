@@ -19,11 +19,14 @@ def main() -> None:
     st.set_page_config(page_title="Action Recognition Demo", layout="wide")
     st.title("🎬 Распознавание действий на видео")
 
-    # ---- sidebar: model choice ----
-    available = [n for n in config.MODEL_NAMES
-                 if (config.CHECKPOINT_DIR / f"{n}_best.pt").exists()
-                 or (config.CHECKPOINT_DIR / f"{n}.pt").exists()]
-    default_models = available or config.MODEL_NAMES
+    # ---- sidebar: model choice (best-accuracy first) ----
+    PREF = ["videomae", "i3d", "r2plus1d", "timesformer", "tsm", "tsn"]
+    def _has_ckpt(n):
+        return ((config.CHECKPOINT_DIR / f"{n}_best.pt").exists()
+                or (config.CHECKPOINT_DIR / f"{n}.pt").exists())
+    order = [n for n in PREF if n in config.MODEL_NAMES]
+    available = [n for n in order if _has_ckpt(n)]
+    default_models = available or order
     model_name = st.sidebar.selectbox("Модель", default_models)
     tiny = st.sidebar.checkbox("tiny transformer (если нет весов)", value=False)
     if not available:

@@ -89,10 +89,16 @@ python -m src.evaluate --model r2plus1d
 python -m src.compare
 python -m reports.generate_report
 ```
-**Демо:**
+**Демо** (Streamlit, инференс на CPU, 8 кадров):
 ```bash
 streamlit run demo/app.py
 ```
+Веса (`*.pt`) в репозиторий не входят. Для предсказаний на реальных данных положите
+чекпоинт лучшей модели в `checkpoints/` (например, `i3d_best.pt` — лёгкий и быстрый
+на CPU, или `videomae_best.pt` — самый точный), скачав его с Google Drive после
+обучения. Без чекпоинта демо запустится в режиме случайных предсказаний (для проверки
+интерфейса). Приложение показывает превью кадров, действие, уверенность (top-3) и
+ведёт SQLite-историю (`demo/history.db`).
 
 ## Воспроизводимость
 Seed зафиксирован (`SEED=42`, [src/config.py](src/config.py)), версии пакетов — в
