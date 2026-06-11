@@ -10,6 +10,7 @@ Exit code 0 = all stages passed.
 from __future__ import annotations
 
 import gc
+import os
 import py_compile
 import subprocess
 import sys
@@ -21,6 +22,14 @@ import torch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+
+# Redirect all outputs to a throwaway dir so the smoke run (synthetic data) never
+# overwrites the real Colab results committed under results/ / checkpoints/.
+_SMOKE_OUT = Path(tempfile.mkdtemp(prefix="venya_smoke_"))
+os.environ.setdefault("VENYA_RESULTS_DIR", str(_SMOKE_OUT / "results"))
+os.environ.setdefault("VENYA_CHECKPOINT_DIR", str(_SMOKE_OUT / "checkpoints"))
+os.environ.setdefault("VENYA_REPORT_DIR", str(_SMOKE_OUT / "report"))
+os.environ.setdefault("VENYA_DEMO_DB", str(_SMOKE_OUT / "history.db"))
 
 from src import config  # noqa: E402
 from src.models.registry import build_model  # noqa: E402

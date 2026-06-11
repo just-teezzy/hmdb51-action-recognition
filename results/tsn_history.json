@@ -2,22 +2,22 @@
   "model": "tsn",
   "config": {
     "frames": 8,
-    "img_size": 64,
+    "img_size": 112,
     "batch_size": 4,
     "lr": 0.0001,
     "epochs": 1,
-    "pretrained": false,
+    "pretrained": true,
     "frozen": false
   },
   "epochs": [
     {
       "epoch": 1,
-      "train_loss": 2.2001673936843873,
-      "train_acc": 0.18333333333333332,
-      "val_loss": 2.1823638916015624,
-      "val_acc": 0.1,
-      "seconds": 33.67551493099745
+      "train_loss": 2.5901549577713014,
+      "train_acc": 0.125,
+      "val_loss": 2.6036930203437807,
+      "val_acc": 0.075,
+      "seconds": 6.670042485000067
     }
   ],
-  "best_val_acc": 0.1
+  "best_val_acc": 0.075
 }

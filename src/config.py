@@ -5,6 +5,7 @@ training, evaluation, the demo and the report all use the same definitions.
 """
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
@@ -20,10 +21,12 @@ DATA_DIR = ROOT / "data"
 RAW_DIR = DATA_DIR / "raw"            # extracted HMDB51 .avi files, one folder per class
 SPLIT_DIR = DATA_DIR / "splits"      # official HMDB51 split .txt files
 PROCESSED_DIR = DATA_DIR / "processed"
-CHECKPOINT_DIR = ROOT / "checkpoints"
-RESULTS_DIR = ROOT / "results"       # per-model metrics .json + figures
-REPORT_DIR = ROOT / "reports" / "out"
-DEMO_DB = ROOT / "demo" / "history.db"
+# Output dirs can be redirected via env vars so the smoke test (synthetic data)
+# never clobbers the real Colab results committed under results/.
+CHECKPOINT_DIR = Path(os.environ.get("VENYA_CHECKPOINT_DIR", ROOT / "checkpoints"))
+RESULTS_DIR = Path(os.environ.get("VENYA_RESULTS_DIR", ROOT / "results"))
+REPORT_DIR = Path(os.environ.get("VENYA_REPORT_DIR", ROOT / "reports" / "out"))
+DEMO_DB = Path(os.environ.get("VENYA_DEMO_DB", ROOT / "demo" / "history.db"))
 
 for _d in (DATA_DIR, RAW_DIR, SPLIT_DIR, CHECKPOINT_DIR, RESULTS_DIR, REPORT_DIR):
     _d.mkdir(parents=True, exist_ok=True)
