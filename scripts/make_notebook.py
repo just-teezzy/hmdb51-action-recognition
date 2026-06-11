@@ -106,27 +106,53 @@ md("""## 8. ФАЗА 2 — полное обучение 5 моделей
 
 По умолчанию backbone заморожен (учится голова) — быстро и экономит память;
 для полного дообучения добавьте `--no-freeze`.""")
-code("""import subprocess, sys
+code("""import subprocess, sys, os
+
+PROJ = "/content/venya"
+if not os.path.isdir(PROJ):
+    raise SystemExit("/content/venya отсутствует — рантайм был сброшен. "
+                     "Перезапустите ячейки 1-6 (Drive, clone, install, download, "
+                     "sanity, symlink), затем эту.")
+os.chdir(PROJ)
+
 EPOCHS = 15
 ORDER = ["tsn", "tsm", "r2plus1d", "i3d", "videomae"]
 
+def run(cmd):
+    # stream output line-by-line so it is VISIBLE in Colab (Colab captures
+    # Python print, not a child's stdout) and failures are loud.
+    print(">>", " ".join(cmd[2:]), flush=True)
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                         text=True, bufsize=1)
+    for line in p.stdout:
+        print(line, end="", flush=True)
+    p.wait()
+    return p.returncode
+
+def done(model):
+    return os.path.exists(f"results/{model}_metrics.json")
+
 def train_then_eval(model, train_extra=None):
-    r = subprocess.run([sys.executable, "-m", "src.train", "--model", model,
-                        "--epochs", str(EPOCHS)] + (train_extra or []))
-    if r.returncode != 0:
+    rc = run([sys.executable, "-m", "src.train", "--model", model,
+              "--epochs", str(EPOCHS)] + (train_extra or []))
+    if rc != 0:
+        print(f"!! train {model} завершился с кодом {rc}", flush=True)
         return False
-    subprocess.run([sys.executable, "-m", "src.evaluate", "--model", model])
+    run([sys.executable, "-m", "src.evaluate", "--model", model])
     return True
 
 for m in ORDER:
-    print("=" * 70, m)
+    print("=" * 70, m, flush=True)
+    if done(m):
+        print(f"уже готов (results/{m}_metrics.json на Drive) — пропуск", flush=True)
+        continue
     ok = train_then_eval(m)
     if not ok and m == "videomae":
-        print("VideoMAE упал (вероятно OOM) -> запасная 5-я: TimeSformer")
-        if not train_then_eval("timesformer"):
-            print("TimeSformer тоже упал -> пробуем VideoMAE в tiny-режиме")
+        print("VideoMAE упал (вероятно OOM) -> запасная 5-я: TimeSformer", flush=True)
+        if not (done("timesformer") or train_then_eval("timesformer")):
+            print("TimeSformer тоже упал -> пробуем VideoMAE в tiny-режиме", flush=True)
             train_then_eval("videomae", ["--tiny"])
-print("\\nФАЗА 2 завершена.")""")
+print("\\nФАЗА 2 завершена.", flush=True)""")
 
 md("## 9. Сравнение и отчёт")
 code("""!python -m src.compare
